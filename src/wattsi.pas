@@ -1050,6 +1050,8 @@ var
                      Fail('Unused reference: [' + LastSeenReferenceName + ']');
                   Result := False;
                end
+               else
+                  References.Remove(LastSeenReferenceName);
             end
             else
                LastSeenReferenceName := '';
@@ -1345,7 +1347,7 @@ var
    NewLink, DFN: TElement;
    DFNEntry: TDFNEntry;
    ListNodeHead, ListNode, NextListNode: PElementListNode;
-   Anchor, DFNAnchor, SectionName: UTF8String;
+   Anchor, DFNAnchor, SectionName, MissingReferenceName: UTF8String;
 begin
    HighlighterOutputByJSONContents := TStringMap.Create(@UTF8StringHash32);
    XrefsByDFNAnchor := TXrefsByDFNAnchor.Create(@UTF8StringHash32);
@@ -1516,6 +1518,14 @@ begin
       CrossReferences.DFNs.Free();
       for ListNodeHead in References.Values do
       begin
+         if (Variant <> vDEV) then
+         begin
+            for MissingReferenceName in References.GetEnumerator do
+            begin
+               References.Remove(MissingReferenceName);
+               Fail('Missing reference: [' + MissingReferenceName + ']');
+            end;
+         end;
          ListNode := ListNodeHead;
          while (Assigned(ListNode)) do
          begin
